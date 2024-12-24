@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.seanervinson.articulate"
     },
     "web": {
       "bundler": "metro",
@@ -32,10 +33,20 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "742155cf-2c1f-414d-9c2f-2704140c72bd"
+      }
     }
   }
 }
