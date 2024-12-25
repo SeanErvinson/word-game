@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
 import { Chip, Text, TextInput, Button } from "react-native-paper";
-import useGameStore, { Categories } from "@/components/Game/gameStore";
+import useGameStore, { Categories } from "@/modules/game/store/gameStore";
 import { isNumeric } from "@/utils/numberUtils";
 import { useRouter } from "expo-router";
 import { toTitleCase } from "@/utils/stringUtils";

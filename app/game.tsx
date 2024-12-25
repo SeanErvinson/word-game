@@ -1,12 +1,18 @@
-import useGameStore from "@/components/Game/gameStore";
+import useGameStore from "@/modules/game/store/gameStore";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
 import Swiper from "react-native-deck-swiper";
-import { Button, Modal, Portal, Text } from "react-native-paper";
+import {
+  Button,
+  Modal,
+  Portal,
+  Text,
+  ActivityIndicator,
+} from "react-native-paper";
 
 import { shuffle } from "@/utils/arrayUtils";
-import { fetchGameWords } from "@/modules/game/queries/useGameWords";
+import { useGameWords } from "@/modules/game/queries/useGameWords";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 
@@ -22,16 +28,15 @@ const Game = () => {
   const [correctGuessScore, setCorrectGuessScore] = useState(0);
   const [incorrectGuessScore, setIncorrectGuessScore] = useState(0);
   const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const { isLoading, data } = useGameWords();
 
   const [words, setWords] = useState<string[]>([]);
 
   useEffect(() => {
-    const getGameWord = async () => {
-      const response = await fetchGameWords();
-      setWords(shuffle(response[category]));
-    };
-    getGameWord();
-  }, []);
+    if (data) {
+      setWords(shuffle(data[category]));
+    }
+  }, [data]);
 
   const playableWords = !gameStarted ? [] : words;
 
@@ -79,63 +84,79 @@ const Game = () => {
     <SafeAreaView>
       <View style={styles.body}>
         <View style={styles.container}>
-          <View style={styles.header}>
-            <View style={styles.scoreGroup}>
-              <Text
-                style={[styles.text, { color: Colors.dark.intent.negative }]}
-              >
-                ✕
-              </Text>
-              <Text style={[styles.text]}>{incorrectGuessScore}</Text>
-            </View>
-            <Text style={[styles.text, { fontSize: 48 }]}>
-              {timer > 0 ? timer : ""}
-            </Text>
-            <View style={styles.scoreGroup}>
-              <Text
-                style={[styles.text, { color: Colors.dark.intent.positive }]}
-              >
-                ✔
-              </Text>
-              <Text style={[styles.text]}>{correctGuessScore}</Text>
-            </View>
-          </View>
-          <View style={styles.cardContainer}>
-            <Swiper
-              containerStyle={styles.cardOverlayContainer}
-              cardStyle={styles.card}
-              useViewOverflow={false}
-              cards={playableWords}
-              renderCard={(card) => {
-                return <Text style={styles.cardText}>{card}</Text>;
-              }}
-              onSwipedRight={() => {
-                setCorrectGuessScore((state) => state + 1);
-              }}
-              onSwipedLeft={() => {
-                setIncorrectGuessScore((state) => state + 1);
-              }}
-              verticalSwipe={false}
-              horizontalSwipe={gameStarted}
-              backgroundColor={"#000"}
-              showSecondCard={false}
+          {isLoading ? (
+            <ActivityIndicator
+              animating
+              color={Colors.dark.intent.primary}
+              size="large"
             />
-          </View>
+          ) : (
+            <>
+              <View style={styles.header}>
+                <View style={styles.scoreGroup}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { color: Colors.dark.intent.negative },
+                    ]}
+                  >
+                    ✕
+                  </Text>
+                  <Text style={[styles.text]}>{incorrectGuessScore}</Text>
+                </View>
+                <Text style={[styles.text, { fontSize: 64 }]}>
+                  {timer > 0 ? timer : ""}
+                </Text>
+                <View style={styles.scoreGroup}>
+                  <Text
+                    style={[
+                      styles.text,
+                      { color: Colors.dark.intent.positive },
+                    ]}
+                  >
+                    ✔
+                  </Text>
+                  <Text style={[styles.text]}>{correctGuessScore}</Text>
+                </View>
+              </View>
+              <View style={styles.cardContainer}>
+                <Swiper
+                  containerStyle={styles.cardOverlayContainer}
+                  cardStyle={styles.card}
+                  useViewOverflow={false}
+                  cards={playableWords}
+                  renderCard={(card) => {
+                    return <Text style={styles.cardText}>{card}</Text>;
+                  }}
+                  onSwipedRight={() => {
+                    setCorrectGuessScore((state) => state + 1);
+                  }}
+                  onSwipedLeft={() => {
+                    setIncorrectGuessScore((state) => state + 1);
+                  }}
+                  verticalSwipe={false}
+                  horizontalSwipe={gameStarted}
+                  backgroundColor={"#000"}
+                  showSecondCard={false}
+                />
+              </View>
 
-          <View
-            style={{
-              height: 80,
-              width: "100%",
-              alignContent: "center",
-              justifyContent: "center",
-            }}
-          >
-            {!gameStarted && !gameFinished && timer >= 0 && (
-              <Button style={styles.button} onPress={handleOnStart}>
-                <Text style={styles.buttonText}>START</Text>
-              </Button>
-            )}
-          </View>
+              <View
+                style={{
+                  height: 80,
+                  width: "100%",
+                  alignContent: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {!gameStarted && !gameFinished && timer >= 0 && (
+                  <Button style={styles.button} onPress={handleOnStart}>
+                    <Text style={styles.buttonText}>START</Text>
+                  </Button>
+                )}
+              </View>
+            </>
+          )}
         </View>
         <Portal>
           <Modal
